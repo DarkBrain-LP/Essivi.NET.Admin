@@ -1,0 +1,212 @@
+﻿@page "/addCustomer"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<style>
+    form .row {
+        margin-bottom: 16px;
+    }
+</style>
+
+@if (customer == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h1>Ajouter nouvelle</h1>
+
+    <RadzenTemplateForm Data="@customer" Submit="@((Customer args) => { Submit(args); })">
+        <div class="container-fluid">
+            <div class="row">
+                <RadzenFieldset Text="Informations">
+                    <div class="row">
+                        <div class="col-lg-3 p-3">
+                            <RadzenCard>
+                                <RadzenLabel Text="Nom" />
+                                <RadzenTextBox @bind-Value="customer.Name" Disabled="false" />
+                            </RadzenCard>
+                        </div>
+                        <div class="col-lg-3 p-3">
+                            <RadzenCard>
+                                <RadzenLabel Text="Prénom" />
+                                <RadzenTextBox @bind-Value="customer.FirstName" Disabled="false" />
+                            </RadzenCard>
+                        </div>
+                        <div class="col-lg-3 p-3">
+                            <RadzenCard>
+                                <RadzenLabel Text="Type de Client" />
+                                <RadzenDropDown @bind-Value="customer.Type" Data="types">
+                                </RadzenDropDown>
+                            </RadzenCard>
+                        </div>
+                        <div class="col-lg-3 p-3">
+                            <RadzenCard>
+                                <RadzenLabel Text="Quartier" />
+                                <RadzenTextBox @bind-Value="customer.Quarter" Disabled="false" />
+                            </RadzenCard>
+                        </div>
+                        <div class="col-lg-3 p-3">
+                            <RadzenCard>
+                                <RadzenLabel Text="Contact" />
+                                <RadzenTextBox @bind-Value="customer.Phone" Disabled="false" />
+                            </RadzenCard>
+                        </div>
+                        <div class="col-lg-3 p-3">
+                            <RadzenCard>
+                                <RadzenLabel Text="Livreur" />
+                                <RadzenDropDown @bind-Value="customer.Delivrer.Id" Data="delivrers" TextProperty="CompleteName" ValueProperty="Id">
+                                </RadzenDropDown>
+                            </RadzenCard>
+                        </div>
+                        <div class="col-md-4 p-3">
+                            <RadzenCard>
+                                <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Photo</RadzenText>
+                                <RadzenUpload Multiple="true" Accept="image/*" Url="upload/multiple" Progress=@(args => OnProgress(args, "Images only upload")) class="w-100" />
+                            </RadzenCard>
+                        </div>
+                    </div>
+                    <div class="col-md-10 center">
+                        <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="Save" />
+                    </div>
+                </RadzenFieldset>
+            </div>
+        </div>
+    </RadzenTemplateForm>
+
+
+    <h1>Liste Existants</h1>
+    <RadzenDataGrid @ref="dataGrid" AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="10" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+                    Data="@customers" TItem="Customer" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or">
+        <Columns>
+            <RadzenDataGridColumn TItem="Customer" Property="Id" Filterable="false" Title="N°" Frozen="false" Width="80px" TextAlign="TextAlign.Center" />
+            <RadzenDataGridColumn TItem="Customer" Property="Name" Title="Nom" Frozen="false" Width="160px" />
+            <RadzenDataGridColumn TItem="Customer" Property="FirstName" Title="Prénom" Width="160px" />
+            <RadzenDataGridColumn TItem="Customer" Property="Type" Title="Type Client" Width="100px" />
+            <RadzenDataGridColumn TItem="Customer" Property="Quarter" Title="Quartier" Width="140px" />
+            <RadzenDataGridColumn TItem="Customer" Property="Phone" Title="Contact" Width="120px" />
+            <RadzenDataGridColumn TItem="Customer" Property="DelivrerName" Title="Livreur" Width="160px" />
+        </Columns>
+    </RadzenDataGrid>
+
+    
+    <EventConsole @ref=@console />
+}
+
+@code {
+
+    Customer customer = new Customer(){Delivrer = new Delivrer()};
+    public List<Delivrer> delivrers = new List<Delivrer>()
+    {
+        new Delivrer(){Id=1, Name="DN1", FirstName="DFN1"},
+        new Delivrer(){Id=2, Name="DN2", FirstName="DFN2"},
+        new Delivrer(){Id=3, Name="DN3", FirstName="DFN3"},
+        new Delivrer(){Id=4, Name="DN4", FirstName="DFN4"},
+        new Delivrer(){Id=5, Name="DN5", FirstName="DFN5"},
+    };
+
+    public List<string> types = new() { "PERSONNEL", "DETAILLISTE", "GROSSISTE" };
+
+    public List<Customer> customers = new()
+    {
+        new Customer(){Id=1, Name="Cst1", FirstName="Cst1", Type="Grossiste", Quarter="Kagomé", Phone="98567578", DelivrerName="Delivrer 1"},
+        new Customer(){Id=2, Name="Cst2", FirstName="Cst2", Type="Grossiste", Quarter="Avépozo", Phone="98567578", DelivrerName="Delivrer 2"},
+        new Customer(){Id=3, Name="Cst1", FirstName="Cst1", Type="Détailliste", Quarter="Agoè Kossigan", Phone="98567578", DelivrerName="Delivrer 8"},
+        new Customer(){Id=4, Name="Cst1", FirstName="Cst1", Type="Personnel", Quarter="Kagomé", Phone="98567578", DelivrerName="Delivrer 1"},
+        new Customer(){Id=5, Name="Cst2", FirstName="Cst2", Type="Grossiste", Quarter="Avépozo", Phone="98567578", DelivrerName="Delivrer 2"},
+        new Customer(){Id=6, Name="Cst1", FirstName="Cst1", Type="Détailliste", Quarter="Agoè Kossigan", Phone="98567578", DelivrerName="Delivrer 8"},
+        new Customer(){Id=7, Name="Cst1", FirstName="Cst1", Type="Personnel", Quarter="Kagomé", Phone="98567578", DelivrerName="Delivrer 1"},
+        new Customer(){Id=8, Name="Cst2", FirstName="Cst2", Type="Grossiste", Quarter="Avépozo", Phone="98567578", DelivrerName="Delivrer 2"},
+        new Customer(){Id=9, Name="Cst1", FirstName="Cst1", Type="Détailliste", Quarter="Agoè Kossigan", Phone="98567578", DelivrerName="Delivrer 8"},
+        new Customer(){Id=10, Name="Cst1", FirstName="Cst1", Type="Personnel", Quarter="Kagomé", Phone="98567578", DelivrerName="Delivrer 1"},
+        new Customer(){Id=11, Name="Cst2", FirstName="Cst2", Type="Grossiste", Quarter="Avépozo", Phone="98567578", DelivrerName="Delivrer 2"},
+        new Customer(){Id=12, Name="Cst1", FirstName="Cst1", Type="Détailliste", Quarter="Agoè Kossigan", Phone="98567578", DelivrerName="Delivrer 8"},
+        new Customer(){Id=13, Name="Cst1", FirstName="Cst1", Type="Personnel", Quarter="Kagomé", Phone="98567578", DelivrerName="Delivrer 1"},
+        new Customer(){Id=14, Name="Cst2", FirstName="Cst2", Type="Grossiste", Quarter="Avépozo", Phone="98567578", DelivrerName="Delivrer 2"},
+        new Customer(){Id=15, Name="Cst1", FirstName="Cst1", Type="Détailliste", Quarter="Agoè Kossigan", Phone="98567578", DelivrerName="Delivrer 8"},
+        new Customer(){Id=16, Name="Cst1", FirstName="Cst1", Type="Personnel", Quarter="Kagomé", Phone="98567578", DelivrerName="Delivrer 1"},
+        new Customer(){Id=17, Name="Cst2", FirstName="Cst2", Type="Grossiste", Quarter="Avépozo", Phone="98567578", DelivrerName="Delivrer 2"},
+        new Customer(){Id=18, Name="Cst1", FirstName="Cst1", Type="Détailliste", Quarter="Agoè Kossigan", Phone="98567578", DelivrerName="Delivrer 8"},
+        new Customer(){Id=19, Name="Cst1", FirstName="Cst1", Type="Personnel", Quarter="Kagomé", Phone="98567578", DelivrerName="Delivrer 1"},
+    };
+
+    RadzenDataGrid<Customer> dataGrid;
+    RadzenUpload upload;
+    EventConsole console;
+
+
+    int progress;
+    bool showProgress;
+    bool showComplete;
+    string completionMessage;
+    bool cancelUpload = false;
+
+    void CompleteUpload(UploadCompleteEventArgs args)
+    {
+        if (!args.Cancelled)
+            completionMessage = "Upload Complete!";
+        else
+            completionMessage = "Upload Cancelled!";
+
+        showProgress = false;
+        showComplete = true;
+    }
+
+    void TrackProgress(UploadProgressArgs args)
+    {
+        showProgress = true;
+        showComplete = false;
+        progress = args.Progress;
+
+        // cancel upload
+        args.Cancel = cancelUpload;
+
+        // reset cancel flag
+        cancelUpload = false;
+    }
+
+    void CancelUpload()
+    {
+        cancelUpload = true;
+    }
+
+    int customParameter = 1;
+
+    void OnChange(UploadChangeEventArgs args, string name)
+    {
+        foreach (var file in args.Files)
+        {
+            console.Log($"File: {file.Name} / {file.Size} bytes");
+        }
+
+        console.Log($"{name} changed");
+    }
+
+    void OnProgress(UploadProgressArgs args, string name)
+    {
+        console.Log($"{args.Progress}% '{name}' / {args.Loaded} of {args.Total} bytes.");
+
+        if (args.Progress == 100)
+        {
+            foreach (var file in args.Files)
+            {
+                console.Log($"Uploaded: {file.Name} / {file.Size} bytes");
+            }
+        }
+    }
+
+    void OnComplete(UploadCompleteEventArgs args)
+    {
+        console.Log($"Server response: {args.RawResponse}");
+    }
+
+    void Submit(Customer arg)
+    {
+        //
+    }
+
+    void Cancel()
+    {
+        //
+    }
+}

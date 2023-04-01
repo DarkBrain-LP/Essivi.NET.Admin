@@ -1,0 +1,193 @@
+﻿@page "/addOrder"
+
+<style>
+    form .row {
+        margin-bottom: 16px;
+    }
+</style>
+
+@if (delivrer == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <RadzenTemplateForm Data="@order" Submit="@((Order args) => { Submit(args); })">
+        <div class="container-fluid">
+            <div class="row">
+                <RadzenFieldset Text="Infomrations">
+                    <div class="row">
+                        <div class="col-lg-3 p-3">
+                            <RadzenCard>
+                                <RadzenLabel Text="Client" />
+                                <RadzenDropDown @bind-Value="order.CustomerId" Data="customers" Change="CustomerChanged" TextProperty="FullName" ValueProperty="Id">
+                                </RadzenDropDown>
+                            </RadzenCard>
+                        </div>
+                        <div class="col-lg-3 p-3">
+                            <RadzenCard>
+                                <RadzenLabel Text="Point de Livraison" />
+                                <RadzenDropDown @bind-Value="order.DeliveryPoint" Data="locations" TextProperty="Quarter" >
+                                </RadzenDropDown>
+                            </RadzenCard>
+                        </div>
+                    </div>
+                </RadzenFieldset>
+                </div>
+        </div>
+    </RadzenTemplateForm>
+
+    <RadzenTemplateForm @ref="form" Data="@orderItem" Submit="@((OrderItem args) => { AddedProduct(args); })">
+
+        <RadzenFieldset Text="Produits">
+            <div class="row">
+                <div class="col-lg-3 p-3">
+                    <RadzenCard>
+                        <RadzenLabel Text="Produit" />
+                        <RadzenDropDown @bind-Value="orderItem.Product.Id" Data="products" TextProperty="Name" ValueProperty="Id">
+                        </RadzenDropDown>
+                    </RadzenCard>
+                </div>
+                <div class="col-lg-3 p-3">
+                    <RadzenCard>
+                        <RadzenLabel Text="Quantité" />
+                        <RadzenNumeric @bind-Value="orderItem.Quantity" TValue="int" />
+                    </RadzenCard>
+                </div>
+                <div class="col-lg-3 p-3  justify-content-center">
+                    <RadzenButton ButtonType="ButtonType.Submit" Icon="Plus" Text="Ajouter" />
+                </div>
+            </div>
+        </RadzenFieldset>
+        <h2>Panier</h2>
+        <RadzenDataGrid @ref="dataGrid" AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="10" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+                        Data="@orderProducts" TItem="OrderItem" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or">
+            <Columns>
+                <RadzenDataGridColumn TItem="OrderItem" Property="Id" Filterable="false" Title="ID" Frozen="true" Width="80px" TextAlign="TextAlign.Center" />
+                <RadzenDataGridColumn TItem="OrderItem" Property="Product.Name" Title="Produit" Frozen="false" Width="100px" />
+                <RadzenDataGridColumn TItem="OrderItem" Property="Product.Category" Title="Catégorie" Width="100px" />
+                <RadzenDataGridColumn TItem="OrderItem" Property="Product.VolumeLitter" Title="Volume(L)" Width="100px" />
+                <RadzenDataGridColumn TItem="OrderItem" Property="Product.Price" Title="Prix Unitaire" Width="100px" />
+                <RadzenDataGridColumn TItem="OrderItem" Property="Quantity" Title="Quantité" Width="100px" />
+                <RadzenDataGridColumn TItem="OrderItem" Property="Price" Title="Prix Total" Width="100px" />
+            </Columns>
+        </RadzenDataGrid>
+
+        <div class="row justify-content-center">
+            <div class="col-md-6 d-flex align-items-end justify-content-center" style="margin-top: 16px;">
+                <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="Valider" Click="@AddOrder" />
+                <RadzenButton ButtonStyle="ButtonStyle.Light" Icon="cancel" style="display: inline-block; margin-left: 10px;" Text="Annuler" Click="@Cancel" />
+            </div>
+        </div>
+    </RadzenTemplateForm>
+    <EventConsole @ref=@console />
+}
+
+@code {
+
+    Order order = new Order();
+
+    public List<Customer> customers = new()
+    {
+        new Customer() {Id=1, Name="Cst1", FirstName="Cst1", Type="Grossiste", Quarter="Kagomé", Phone="98567578", DelivrerName="Delivrer 1", DelivryPoints=new(){ new() { Latitude = 0.1, Longitude = 102.6, Quarter = "Adakpamé" }, new() { Latitude = 0.1, Longitude = 102.6, Quarter = "Bè-Kpotaf" } }, },
+        new Customer(){Id=2, Name="Cst2", FirstName="Cst2", Type="Grossiste", Quarter="Avépozo", Phone="98567578", DelivrerName="Delivrer 2", DelivryPoints=new(){ new() { Latitude = 0.1, Longitude = 102.6, Quarter = "Avépozo" } } },
+        new Customer(){Id=3, Name="Cst1", FirstName="Cst1", Type="Détailliste", Quarter="Agoè Kossigan", Phone="98567578", DelivrerName="Delivrer 8", DelivryPoints=new(){ new() { Latitude=0.1, Longitude=102.6, Quarter="AGOE KOFFI PANOU"} } },
+        new Customer(){Id=4, Name="Cst1", FirstName="Cst1", Type="Personnel", Quarter="Kagomé", Phone="98567578", DelivrerName="Delivrer 1"},
+        new Customer(){Id=5, Name="Cst2", FirstName="Cst2", Type="Grossiste", Quarter="Avépozo", Phone="98567578", DelivrerName="Delivrer 2"},
+        new Customer(){Id=6, Name="Cst1", FirstName="Cst1", Type="Détailliste", Quarter="Agoè Kossigan", Phone="98567578", DelivrerName="Delivrer 8", DelivryPoints=new(){ new() { Latitude=0.1, Longitude=102.6, Quarter="Adakpamé" }} },
+        new Customer(){Id=7, Name="Cst1", FirstName="Cst1", Type="Personnel", Quarter="Kagomé", Phone="98567578", DelivrerName="Delivrer 1"},
+        new Customer(){Id=8, Name="Cst2", FirstName="Cst2", Type="Grossiste", Quarter="Avépozo", Phone="98567578", DelivrerName="Delivrer 2"},
+        new Customer(){Id=9, Name="Cst1", FirstName="Cst1", Type="Détailliste", Quarter="Agoè Kossigan", Phone="98567578", DelivrerName="Delivrer 8", DelivryPoints=new(){ new() { Latitude = 0.1, Longitude = 102.6, Quarter = "Adakpamé" } } },
+        new Customer(){Id=10, Name="Cst1", FirstName="Cst1", Type="Personnel", Quarter="Kagomé", Phone="98567578", DelivrerName="Delivrer 1"},
+        new Customer(){Id=11, Name="Cst2", FirstName="Cst2", Type="Grossiste", Quarter="Avépozo", Phone="98567578", DelivrerName="Delivrer 2"},
+        new Customer(){Id=12, Name="Cst1", FirstName="Cst1", Type="Détailliste", Quarter="Agoè Kossigan", Phone="98567578", DelivrerName="Delivrer 8"},
+        new Customer(){Id=13, Name="Cst1", FirstName="Cst1", Type="Personnel", Quarter="Kagomé", Phone="98567578", DelivrerName="Delivrer 1"},
+        new Customer(){Id=14, Name="Cst2", FirstName="Cst2", Type="Grossiste", Quarter="Avépozo", Phone="98567578", DelivrerName="Delivrer 2"},
+        new Customer(){Id=15, Name="Cst1", FirstName="Cst1", Type="Détailliste", Quarter="Agoè Kossigan", Phone="98567578", DelivrerName="Delivrer 8"},
+        new Customer(){Id=16, Name="Cst1", FirstName="Cst1", Type="Personnel", Quarter="Kagomé", Phone="98567578", DelivrerName="Delivrer 1"},
+        new Customer(){Id=17, Name="Cst2", FirstName="Cst2", Type="Grossiste", Quarter="Avépozo", Phone="98567578", DelivrerName="Delivrer 2"},
+        new Customer(){Id=18, Name="Cst1", FirstName="Cst1", Type="Détailliste", Quarter="Agoè Kossigan", Phone="98567578", DelivrerName="Delivrer 8"},
+        new Customer(){Id=19, Name="Cst1", FirstName="Cst1", Type="Personnel", Quarter="Kagomé", Phone="98567578", DelivrerName="Delivrer 1"},
+    };
+    List<DelivryPoint> locations;
+
+    List<Product> products = new()
+    {
+        new Product(){Id=0, Name="Sélectionnez", CategoryName="", VolumeLitter=0.5, Price=300, Number=30},
+        new Product(){Id=1, Name="Essivi-05L", CategoryName="EAU-Sachet", VolumeLitter=0.5, Price=300, Number=30},
+        new Product(){Id=2, Name="Essivi-03L-B", CategoryName="EAU-Bidon", VolumeLitter=0.3, Price=2000, Number=24},
+        new Product(){Id=3, Name="Essivi-05L-B", CategoryName="EAU-Bidon", VolumeLitter=0.5, Price=1500, Number=12},
+        new Product(){Id=4, Name="Essivi-15L-B", CategoryName="EAU-Bidon", VolumeLitter=1.5, Price=3000, Number=6},
+    };
+    int productId = 0;
+    OrderItem orderItem = new() { Product = new() };
+    List<OrderItem> orderProducts = new();
+
+
+    Delivrer delivrer = new Delivrer();
+
+    int i = 0;
+    bool addNew = true;
+    int quantity = 0;
+
+    RadzenDataGrid<OrderItem> dataGrid;
+    RadzenTemplateForm<OrderItem> form;
+    RadzenUpload upload;
+    EventConsole console;
+
+
+    int progress;
+    bool showProgress;
+    bool showComplete;
+    string completionMessage;
+    bool cancelUpload = false;
+
+
+    void CustomerChanged()
+    {
+        locations = customers.Where(c => c.Id == order.CustomerId).FirstOrDefault().DelivryPoints;
+    }
+
+    void AddedProduct(OrderItem arg)
+    {
+        Product prod = products.Where(p => p.Id == arg.Product.Id).FirstOrDefault();
+
+        if(prod is not null)
+        {
+            // Delete if product already exists
+            if (orderProducts.Any(i => i.Product == prod))
+            {
+                orderProducts.Remove(orderProducts.Where(i => i.Product == prod).FirstOrDefault());
+            }
+            arg.Product = prod;
+            orderProducts.Add(new() { Product = products.Where(p => p.Id == arg.Product.Id).FirstOrDefault(), Quantity = arg.Quantity });
+        }
+        dataGrid.Reload();
+
+        products = new()
+        {
+            new Product(){Id=0, Name="Sélectionnez", CategoryName="", VolumeLitter=0.5, Price=300, Number=30},
+            new Product(){Id=1, Name="Essivi-05L", CategoryName="EAU-Sachet", VolumeLitter=0.5, Price=300, Number=30},
+            new Product(){Id=2, Name="Essivi-03L-B", CategoryName="EAU-Bidon", VolumeLitter=0.3, Price=2000, Number=24},
+            new Product(){Id=3, Name="Essivi-05L-B", CategoryName="EAU-Bidon", VolumeLitter=0.5, Price=1500, Number=12},
+            new Product(){Id=4, Name="Essivi-15L-B", CategoryName="EAU-Bidon", VolumeLitter=1.5, Price=3000, Number=6},
+        };
+    }
+
+    void AddOrder()
+    {
+        order.Products = orderProducts;
+
+        // send request to API
+    }
+
+    void Submit(Order arg)
+    {
+        //
+    }
+
+    void Cancel()
+    {
+        //
+    }
+}

@@ -1,0 +1,93 @@
+﻿@page "/order/all"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="10" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+                Data="@orders" TItem="Order" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or">
+    <Columns>
+        <RadzenDataGridColumn TItem="Order" Property="Id" Filterable="false" Title="ID" Frozen="true" Width="80px" TextAlign="TextAlign.Center" />
+        <RadzenDataGridColumn TItem="Order" Property="CustomerName" Title="Client" Frozen="false" Width="160px" />
+        <RadzenDataGridColumn TItem="Order" Property="DeliveryPoint.Quarter" Title="Point de Livraison" Width="200px" />
+        <RadzenDataGridColumn TItem="Order" Property="Quantity" Title="Quantité" Width="200px" />
+        <RadzenDataGridColumn TItem="Order" Property="Price" Title="Prix Total" Width="200px" />
+        <RadzenDataGridColumn TItem="Order" Property="DeliverBefore" Title="Délivrer Avant" FormatString="{0:d}" Width="160px" />
+        <RadzenDataGridColumn TItem="Order" Property="" Title="Detail" Width="160px" />
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    public List<Delivrer> employees = new()
+    {
+        // new items
+        new Delivrer { Id = 2, Name = "Fuller", FirstName = "Andrew", Quarter = "London", Phone = "555-222-1112", HireDate = new DateTime(2012, 8, 15) },
+        new Delivrer { Id = 3, Name = "Leverling", FirstName = "Janet", Quarter = "London", Phone = "555-222-1113", HireDate = new DateTime(2012, 4, 1) },
+        new Delivrer { Id = 4, Name = "Peacock", FirstName = "Margaret", Quarter = "London", Phone = "555-222-1114", HireDate = new DateTime(2012, 5, 3) },
+        new Delivrer { Id = 5, Name = "Buchanan", FirstName = "Steven", Quarter = "London", Phone = "555-222-1115", HireDate = new DateTime(2012, 3, 4) },
+        new Delivrer { Id = 6, Name = "Suyama", FirstName = "Michael", Quarter = "London", Phone = "555-222-1116", HireDate = new DateTime(2012, 10, 17) },
+        new Delivrer { Id = 7, Name = "King", FirstName = "Robert", Quarter = "London", Phone = "555-222-1117", HireDate = new DateTime(2012, 1, 2) },
+        new Delivrer { Id = 8, Name = "Callahan", FirstName = "Laura", Quarter = "Seattle", Phone = "555-222-1118", HireDate = new DateTime(2012, 11, 15) },
+        new Delivrer { Id = 9, Name = "Dodsworth", FirstName = "Anne", Quarter = "London", Phone = "555-222-1119", HireDate = new DateTime(2012, 7, 2) },
+    };
+
+    // add Orders
+    List<Order> orders = new()
+    {
+        new Order()
+        {
+            CustomerName="AMEKOUDJI OrderID = 10248",
+            CanBeUpdated = true,
+            DeliverBefore = new DateTime(2023, 03, 15),
+            DeliveryPoint = new(){ Latitude = 0.1, Longitude = 102.6, Quarter = "Adakpamé" },
+            Id = 1,
+            Products = new()
+            {
+                new(){Product= new(){Id=2, Name="Essivi-03L-B", CategoryName="EAU-Bidon", VolumeLitter=0.3, Price=2000, Number=24}, Quantity=10},
+                new(){Product= new(){Id=2, Name="Essivi-05L-B", CategoryName="EAU-Bidon", VolumeLitter=0.3, Price=2000, Number=24}, Quantity=10},
+                new(){Product= new(){Id=2, Name="Essivi-15L-B", CategoryName="EAU-Bidon", VolumeLitter=0.3, Price=2000, Number=24}, Quantity=10},
+                new(){Product= new(){Id=2, Name="Essivi-03L-B", CategoryName="EAU-Bidon", VolumeLitter=0.3, Price=2000, Number=24}, Quantity=10},
+            }
+        },
+        new Order()
+        {
+            CustomerName="ANANI-KLI?NKPE",
+            CanBeUpdated = false,
+            DeliverBefore = new DateTime(2023, 03, 11),
+            DeliveryPoint = new(){ Latitude = 0.1, Longitude = 102.6, Quarter = "Bè" },
+            Id = 2,
+            Products = new()
+            {
+                new(){Product= new(){Id=2, Name="Essivi-03L-B", CategoryName="EAU-Bidon", VolumeLitter=0.3, Price=2000, Number=24}, Quantity=10},
+                new(){Product= new(){Id=2, Name="Essivi-05L-B", CategoryName="EAU-Bidon", VolumeLitter=0.3, Price=2000, Number=24}, Quantity=10},
+                new(){Product= new(){Id=2, Name="Essivi-15L-B", CategoryName="EAU-Bidon", VolumeLitter=0.3, Price=2000, Number=24}, Quantity=10},
+                new(){Product= new(){Id=2, Name="Essivi-03L-B", CategoryName="EAU-Bidon", VolumeLitter=0.3, Price=2000, Number=24}, Quantity=10},
+            }
+        },
+        new Order()
+        {
+            CustomerName="GBEMOU GBEM'S",
+            CanBeUpdated = true,
+            DeliverBefore = new DateTime(2023, 03, 10),
+            DeliveryPoint = new(){ Latitude = 0.1, Longitude = 102.6, Quarter = "Cacavéli" },
+            Id = 3,
+            Products = new()
+            {
+                new(){Product= new(){Id=2, Name="Essivi-03L-B", CategoryName="EAU-Bidon", VolumeLitter=0.3, Price=2000, Number=24}, Quantity=10},
+                new(){Product= new(){Id=1, Name="Essivi-05L-B", CategoryName="EAU-Bidon", VolumeLitter=0.3, Price=2000, Number=24}, Quantity=1},
+                new(){Product= new(){Id=3, Name="Essivi-15L-B", CategoryName="EAU-Bidon", VolumeLitter=0.3, Price=2000, Number=24}, Quantity=5},
+                new(){Product= new(){Id=4, Name="Essivi-03L-B", CategoryName="EAU-Bidon", VolumeLitter=0.3, Price=2000, Number=24}, Quantity=10},
+            }
+        },
+    };
+
+
+    void Detail()
+    {
+        
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+    }
+}

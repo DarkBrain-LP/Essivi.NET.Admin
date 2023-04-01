@@ -1,0 +1,130 @@
+﻿@page "/products"
+@inject IJSRuntime jsRuntime
+
+@inject ProductService _productService
+<PageTitle>Categorie</PageTitle>
+
+<h1>Ajouter nouvelle</h1>
+
+<RadzenTemplateForm Data="@product" Submit="@((Product args) => { Submit(args); })">
+    <div class="container-fluid">
+        <div class="row">
+            <RadzenFieldset Text="Infomrations">
+                <div class="row">
+                    <div class="col-lg-3 p-3">
+                        <RadzenCard>
+                            <RadzenLabel Text="Nom Catégorie" />
+                            <RadzenDropDown @bind-Value="product.CategoryName" Data="subCategories" TextProperty="Description" ValueProperty="Description">
+                            </RadzenDropDown>
+                        </RadzenCard>
+                    </div>
+                    <div class="col-lg-3 p-3">
+                        <RadzenCard>
+                            <RadzenLabel Text="Nom du Produit" />
+                            <RadzenTextBox @bind-Value="product.Name" Disabled="false"/>
+                        </RadzenCard>
+                    </div>
+                    <div class="col-lg-2 p-3">
+                        <RadzenCard>
+                            <RadzenLabel Text="Quantité(L)" />
+                            <RadzenNumeric @bind-Value="product.VolumeLitter" TValue="double" />
+                        </RadzenCard>
+                    </div>
+                    <div class="col-lg-2 p-3">
+                        <RadzenCard>
+                            <RadzenLabel Text="Quantité" />
+                            <RadzenNumeric @bind-Value="product.Number" TValue="int" />
+                        </RadzenCard>
+                    </div>
+                    <div class="col-lg-2 p-3">
+                        <RadzenCard>
+                            <RadzenLabel Text="Prix(FCFA)" />
+                            <RadzenNumeric @bind-Value="product.Price" TValue="double" />
+                        </RadzenCard>
+                    </div>
+                </div>
+                <div class="col-md-10 center">
+                    <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="Save" />
+                </div>
+            </RadzenFieldset>
+        </div>
+    </div>
+</RadzenTemplateForm>
+
+<h1>Liste Existants</h1>
+<RadzenDataGrid @ref="dataGrid" AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="10" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+                Data="@products" TItem="Product" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or">
+    <Columns>
+        <RadzenDataGridColumn TItem="Product" Property="Id" Filterable="false" Title="N°" Frozen="true" Width="80px" TextAlign="TextAlign.Center" />
+        <RadzenDataGridColumn TItem="Product" Property="Name" Title="Nom" Frozen="false" Width="160px" />
+        <RadzenDataGridColumn TItem="Product" Property="Category" Title="Catégorie" Width="160px" />
+        <RadzenDataGridColumn TItem="Product" Property="VolumeLitter" Title="Volume" Width="80px" />
+        <RadzenDataGridColumn TItem="Product" Property="Price" Title="Prix" Width="120px" />
+        <RadzenDataGridColumn TItem="Product" Property="Number" Title="Nombre" FormatString="{0:d}" Width="80px" />
+    </Columns>
+</RadzenDataGrid>
+
+
+<EventConsole @ref=@console />
+
+@code {
+    List<Category> categories = new()
+    {
+        new Category()
+        {
+            Id="EAU",
+            Name="Eau",
+            subCategories = new()
+            {
+                new(){Category="EAU", Id="SACHET", Name="Sachet"},
+                new(){Category="EAU", Id="BIDON", Name="Bidon"}
+            }
+        }
+    };
+
+    List<SubCategory> subCategories = new()
+    {
+        new(){Category="SELECTIONNEZ", Id="SACHET", Name="CATEGORIE"},
+        new(){Category="EAU", Id="SACHET", Name="Sachet"},
+        new(){Category="EAU", Id="BIDON", Name="Bidon"}
+    };
+
+    List<Product> products = new()
+    {
+        new Product(){Id=1, Name="Essivi-05L", CategoryName="EAU-Sachet", VolumeLitter=0.5, Price=300, Number=30},
+        new Product(){Id=2, Name="Essivi-03L-B", CategoryName="EAU-Bidon", VolumeLitter=0.3, Price=2000, Number=24},
+        new Product(){Id=3, Name="Essivi-05L-B", CategoryName="EAU-Bidon", VolumeLitter=0.5, Price=1500, Number=12},
+        new Product(){Id=4, Name="Essivi-15L-B", CategoryName="EAU-Bidon", VolumeLitter=1.5, Price=3000, Number=6},
+    };
+
+    public Product product = new Product();
+    RadzenDataGrid<Product> dataGrid;
+
+    EventConsole console;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        string token = await jsRuntime.InvokeAsync<string>("sessionStorage.getItem", "token");
+        // get deliverers
+        products = await _productService.GetProducts(token);
+        categories = await _productService.GetCategories(token);
+        subCategories = categories.Select(cat => cat.subCategories).SelectMany(sub => sub).ToList();
+        await base.OnInitializedAsync();
+    }
+
+
+    void Submit(Product arg)
+    {
+        arg.Id = products.Last().Id + 1;
+        products.Add(arg);
+        products.Reverse();
+        dataGrid.Reload();
+        arg = new();
+    }
+
+    void Cancel()
+    {
+        //
+    }
+}

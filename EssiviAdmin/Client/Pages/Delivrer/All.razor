@@ -1,0 +1,47 @@
+﻿@page "/allDelivrers"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@inject IJSRuntime jsRuntime
+@inject DelivererService _delivererService
+
+
+<RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="10" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+                Data="@employees" TItem="Delivrer" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or">
+    <Columns>
+        <RadzenDataGridColumn TItem="Delivrer" Property="Id" Filterable="false" Title="ID" Frozen="true" Width="80px" TextAlign="TextAlign.Center" />
+        @*<RadzenDataGridColumn TItem="Delivrer" Title="Photo" Frozen="true" Sortable="false" Filterable="false" Width="80px" TextAlign="TextAlign.Center">
+            <Template Context="data">
+                <RadzenImage Path="@data.Picture" class="rz-gravatar" />
+            </Template>
+        </RadzenDataGridColumn>*@
+        <RadzenDataGridColumn TItem="Delivrer" Property="Name" Title="Nom" Frozen="false" Width="160px" />
+        <RadzenDataGridColumn TItem="Delivrer" Property="FirstName" Title="Prénom" Width="160px" />
+        <RadzenDataGridColumn TItem="Delivrer" Property="Quarter" Title="Quartier" Width="200px" />
+        <RadzenDataGridColumn TItem="Delivrer" Property="Phone" Title="Contact" Width="120px" />
+        <RadzenDataGridColumn TItem="Delivrer" Property="HireDate" Title="Date d'embauche" FormatString="{0:d}" Width="160px" />
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    public List<Delivrer> employees = new()
+    {
+        // new items
+        new Delivrer { Id = 2, Name = "Fuller", FirstName = "Andrew", Quarter = "London", Phone = "555-222-1112", HireDate = new DateTime(2012, 8, 15) },
+        new Delivrer { Id = 3, Name = "Leverling", FirstName = "Janet", Quarter = "London", Phone = "555-222-1113", HireDate = new DateTime(2012, 4, 1) },
+        new Delivrer { Id = 4, Name = "Peacock", FirstName = "Margaret", Quarter = "London", Phone = "555-222-1114", HireDate = new DateTime(2012, 5, 3) },
+        new Delivrer { Id = 5, Name = "Buchanan", FirstName = "Steven", Quarter = "London", Phone = "555-222-1115", HireDate = new DateTime(2012, 3, 4) },
+        new Delivrer { Id = 6, Name = "Suyama", FirstName = "Michael", Quarter = "London", Phone = "555-222-1116", HireDate = new DateTime(2012, 10, 17) },
+        new Delivrer { Id = 7, Name = "King", FirstName = "Robert", Quarter = "London", Phone = "555-222-1117", HireDate = new DateTime(2012, 1, 2) },
+        new Delivrer { Id = 8, Name = "Callahan", FirstName = "Laura", Quarter = "Seattle", Phone = "555-222-1118", HireDate = new DateTime(2012, 11, 15) },
+        new Delivrer { Id = 9, Name = "Dodsworth", FirstName = "Anne", Quarter = "London", Phone = "555-222-1119", HireDate = new DateTime(2012, 7, 2) },
+    };
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        string token = await jsRuntime.InvokeAsync<string>("sessionStorage.getItem", "token");
+        // get deliverers
+        employees = await _delivererService.GetDeliverers(token);
+        await base.OnInitializedAsync();
+    }
+}
